@@ -2,44 +2,12 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lvgl_port.h"
 
-// 显示硬件配置（根据实际硬件修改）
-#define LCD_PIXEL_CLOCK_HZ   (10 * 1000 * 1000)
-#define LCD_BK_LIGHT_ON_LEVEL 1
-#define LCD_BK_LIGHT_OFF_LEVEL !LCD_BK_LIGHT_ON_LEVEL
-#define PIN_NUM_BK_LIGHT 38
-
-static lv_disp_drv_t disp_drv = {0};
-static lv_indev_drv_t indev_drv = {0};
 static lv_obj_t *arc;
 static lv_obj_t *bubble;
-
-void lvgl_display_init() {
-    // 初始化LVGL显示驱动
-    lv_init();
-    
-    // 配置显示接口
-    esp_lcd_panel_io_handle_t io_handle = NULL;
-    esp_lcd_panel_handle_t panel_handle = NULL;
-    
-    const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_DEFAULT();
-    lvgl_port_init(&lvgl_cfg);
-
-    // 初始化显示面板（以ST7789为例）
-    const esp_lcd_panel_dev_config_t panel_config = {
-        .reset_gpio_num = -1,
-        .rgb_endian = LCD_RGB_ENDIAN_RGB,
-        .bits_per_pixel = 16,
-    };
-    esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle);
-    
-    // 配置背光控制
-    gpio_set_direction((gpio_num_t)PIN_NUM_BK_LIGHT, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)PIN_NUM_BK_LIGHT, LCD_BK_LIGHT_ON_LEVEL);
-}
 
 void create_level_indicator() {
     // 创建主容器

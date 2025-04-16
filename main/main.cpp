@@ -72,81 +72,21 @@ void setup_sensor() {
     ESP_LOGI(TAG, "Ready to read data...");
 }
 
-void app_hardware_init()
-{
-        /* LCD HW initialization */
-        ESP_ERROR_CHECK(app_lcd_init());
-
-        #if EXAMPLE_USE_TOUCH
-            ESP_LOGI(TAG, "Initialize I2C bus");
-            esp_log_level_set("lcd_panel.io.i2c", ESP_LOG_NONE);
-            esp_log_level_set("CST816S", ESP_LOG_NONE);
-            const i2c_config_t i2c_conf = {
-                .mode = I2C_MODE_MASTER,
-                .sda_io_num = EXAMPLE_PIN_NUM_TOUCH_SDA,
-                .sda_pullup_en = GPIO_PULLUP_ENABLE,
-                .scl_io_num = EXAMPLE_PIN_NUM_TOUCH_SCL,
-                .scl_pullup_en = GPIO_PULLUP_ENABLE,
-                .master.clk_speed = 100 * 1000,
-            };
-            i2c_param_config(TOUCH_HOST, &i2c_conf);
-        
-            i2c_driver_install(TOUCH_HOST, i2c_conf.mode, 0, 0, 0);
-        
-            esp_lcd_panel_io_handle_t tp_io_handle = NULL;
-            const esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_CST816S_CONFIG();
-            // Attach the TOUCH to the I2C bus
-            esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)TOUCH_HOST, &tp_io_config, &tp_io_handle);
-        
-            const esp_lcd_touch_config_t tp_cfg = {
-                .x_max = EXAMPLE_LCD_H_RES,
-                .y_max = EXAMPLE_LCD_V_RES,
-                .rst_gpio_num = EXAMPLE_PIN_NUM_TOUCH_RST,
-                .int_gpio_num = EXAMPLE_PIN_NUM_TOUCH_INT,
-                .levels = {
-                    .reset = 0,
-                    .interrupt = 0,
-                },
-                .flags = {
-                    .swap_xy = 0,
-                    .mirror_x = 0,
-                    .mirror_y = 0,
-                },
-            };
-        
-            ESP_LOGI(TAG, "Initialize touch controller");
-            esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &tp);
-        #endif
-        
-            /* LVGL initialization */
-            ESP_ERROR_CHECK(app_lvgl_init());
-        
-        #if EXAMPLE_USE_TOUCH
-            static lv_indev_drv_t indev_drv; // Input device driver (Touch)
-            lv_indev_drv_init(&indev_drv);
-            indev_drv.type = LV_INDEV_TYPE_POINTER;
-            indev_drv.disp = lvgl_disp;
-            indev_drv.read_cb = example_lvgl_touch_cb;
-            indev_drv.user_data = tp;
-            lv_indev_drv_register(&indev_drv);
-        #endif
-}
-
 extern "C" void app_main() {
     // 初始化 LCD 和 触摸屏
-    app_hardware_init();
+    // app_hardware_init();
     
     // 初始化显示驱动
-    lvgl_display_init();
+    // lvgl_display_init();
     
     // 创建水平仪UI
-    create_level_indicator();
+    // create_level_indicator();
 
     setup_sensor();
     xTaskCreate(read_sensor_data, "sensor_read_task", 4096, NULL, 10, NULL);
     
     // 启动LVGL任务
-    xTaskCreate(lvgl_task, "lvgl_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(lvgl_task, "lvgl_task", 4096, NULL, 5, NULL);
 }
 
 void read_sensor_data(void* arg) {
@@ -163,8 +103,8 @@ void read_sensor_data(void* arg) {
             } else {
                 ESP_LOGE(TAG, "Failed to read gyroscope data");
             }
-
-            ESP_LOGI(TAG, "Timestamp: %u, Temperature: %.2f *C", (unsigned int)qmi.getTimestamp(), qmi.getTemperature_C()); // Casting to unsigned int
+            // Casting to unsigned int
+            ESP_LOGI(TAG, "Timestamp: %u, Temperature: %.2f *C", (unsigned int)qmi.getTimestamp(), qmi.getTemperature_C());
         } else {
             ESP_LOGW(TAG, "Data not ready yet");
         }

@@ -1,10 +1,11 @@
 idf_component_register(
     SRCS 
-        
+        "main.cpp"
         "ui/level_indicator.cpp"
     INCLUDE_DIRS 
         "."
         "ui"
+        "../components/SensorLib/src"
     REQUIRES 
         lvgl
         esp_lcd
