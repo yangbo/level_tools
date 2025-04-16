@@ -1,5 +1,5 @@
 {
-    "idf.portWin": "COM3",
+    "idf.portWin": "COM5",
     "idf.customExtraVars": {
         "OPENOCD_SCRIPTS": "C:\\Users\\yangbo\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20240318/openocd-esp32/share/openocd/scripts",
         "IDF_CCACHE_ENABLE": "1",
@@ -9,5 +9,24 @@
     "idf.flashType": "JTAG",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
-    ]
+    ],
+    "idf.espIdfPathWin": "C:\\Users\\yangbo\\esp\\v5.4.1\\esp-idf",
+    "idf.toolsPathWin": "C:\\Users\\yangbo\\.espressif",
+    "idf.pythonInstallPath": "C:\\Users\\yangbo\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "files.associations": {
+        "*.md": "markdown",
+        "*.tpp": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "format": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp",
+        "text_encoding": "cpp",
+        "regex": "cpp"
+    }
 }

@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := qmi8658c
+PROJECT_NAME := level_tools
 
 EXTRA_COMPONENT_DIRS = ../../../SensorLib
 
