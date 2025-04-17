@@ -5,7 +5,6 @@
 #include "esp_log.h"
 #include "sdkconfig.h"
 #include "freertos/queue.h"
-#include "driver/i2c.h"
 #include "SensorLib.h"
 #include "SensorQMI8658.hpp"
 #include "ui/level_indicator.h"
@@ -73,7 +72,7 @@ void setup_sensor() {
 
 extern "C" void app_main() {
     // 初始化 LCD 和 触摸屏
-    // app_hardware_init();
+    ui_main();
     
     // 初始化显示驱动
     // lvgl_display_init();

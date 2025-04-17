@@ -29,6 +29,9 @@
         "text_encoding": "cpp",
         "regex": "cpp",
         "sensorlib.h": "c",
-        "sensorqmi8658.hpp": "c"
+        "sensorqmi8658.hpp": "c",
+        "lv_conf.h": "c",
+        "lv_demos.h": "c",
+        "lv_demo_widgets.h": "c"
     }
 }

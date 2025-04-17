@@ -4,7 +4,6 @@
 
 #include "ui/level_indicator.h"
 #include "lv_conf.h"
-#include "lvgl.h"
 #include "lv_demos.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
@@ -12,6 +11,8 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lvgl_port.h"
 #include "esp_lcd_touch_cst816s.h"
+
+#include "driver/i2c.h"
 
 /* LCD size */
 #define EXAMPLE_LCD_H_RES (240)
@@ -60,7 +61,7 @@ static esp_lcd_panel_handle_t lcd_panel = NULL;
 /* LVGL display and touch */
 static lv_display_t *lvgl_disp = NULL;
 
-static esp_err_t app_lcd_init(void)
+esp_err_t app_lcd_init(void)
 {
     esp_err_t ret = ESP_OK;
 
@@ -269,4 +270,67 @@ void update_level_indicator(float x, float y) {
 
     // 更新圆弧指示
     lv_arc_set_value(arc, angle_x);
+}
+
+void ui_main(void)
+{
+    /* LCD HW initialization */
+    ESP_ERROR_CHECK(app_lcd_init());
+
+#if EXAMPLE_USE_TOUCH
+    ESP_LOGI(TAG, "Initialize I2C bus");
+    esp_log_level_set("lcd_panel.io.i2c", ESP_LOG_NONE);
+    esp_log_level_set("CST816S", ESP_LOG_NONE);
+    const i2c_config_t i2c_conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = EXAMPLE_PIN_NUM_TOUCH_SDA,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = EXAMPLE_PIN_NUM_TOUCH_SCL,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 100 * 1000,
+    };
+    i2c_param_config(TOUCH_HOST, &i2c_conf);
+
+    i2c_driver_install(TOUCH_HOST, i2c_conf.mode, 0, 0, 0);
+
+    esp_lcd_panel_io_handle_t tp_io_handle = NULL;
+    const esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_CST816S_CONFIG();
+    // Attach the TOUCH to the I2C bus
+    esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)TOUCH_HOST, &tp_io_config, &tp_io_handle);
+
+    const esp_lcd_touch_config_t tp_cfg = {
+        .x_max = EXAMPLE_LCD_H_RES,
+        .y_max = EXAMPLE_LCD_V_RES,
+        .rst_gpio_num = EXAMPLE_PIN_NUM_TOUCH_RST,
+        .int_gpio_num = EXAMPLE_PIN_NUM_TOUCH_INT,
+        .levels = {
+            .reset = 0,
+            .interrupt = 0,
+        },
+        .flags = {
+            .swap_xy = 0,
+            .mirror_x = 0,
+            .mirror_y = 0,
+        },
+    };
+
+    ESP_LOGI(TAG, "Initialize touch controller");
+    esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &tp);
+#endif
+
+    /* LVGL initialization */
+    ESP_ERROR_CHECK(app_lvgl_init());
+
+#if EXAMPLE_USE_TOUCH
+    static lv_indev_drv_t indev_drv; // Input device driver (Touch)
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_POINTER;
+    indev_drv.disp = lvgl_disp;
+    indev_drv.read_cb = example_lvgl_touch_cb;
+    indev_drv.user_data = tp;
+    lv_indev_drv_register(&indev_drv);
+#endif
+
+    /* Show LVGL objects */
+    app_main_display();
 }
