@@ -242,24 +242,25 @@ void create_level_indicator()
     lv_arc_set_rotation(arc, 270);
     lv_arc_set_range(arc, -30, 30);
     lv_obj_remove_style(arc, NULL, LV_PART_KNOB);
-    lv_obj_set_style_arc_width(arc, 3, 0);
+    lv_obj_set_style_arc_width(arc, 3, LV_PART_MAIN);
+    lv_obj_clear_flag(arc, LV_OBJ_FLAG_CLICKABLE); // 禁用点击事件
 
     // 创建气泡指示器
     bubble = lv_obj_create(cont);
     lv_obj_set_size(bubble, 20, 20);
-    lv_obj_set_style_radius(bubble, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(bubble, lv_color_hex(0xFF0000), 0);
+    lv_obj_set_style_radius(bubble, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(bubble, lv_color_hex(0xFF0000), LV_PART_MAIN);
+    lv_obj_set_style_border_width(bubble, 0, LV_PART_MAIN);    // 去掉 border
     lv_obj_center(bubble);
-}
 
-void lvgl_task(void *arg)
-{
-    while (1)
-    {
-        // 更新LVGL定时器
-        lv_timer_handler();
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
+    // 创建中心位置空心圆
+    lv_obj_t * center_circle = lv_btn_create(arc); // 创建一个按钮对象
+    lv_obj_center(center_circle);
+    lv_obj_set_size(center_circle, 20, 20);        // 设置按钮的大小
+    lv_obj_set_style_radius(center_circle, LV_RADIUS_CIRCLE, LV_PART_MAIN); // 设置按钮的圆角半径为圆形
+    lv_obj_set_style_bg_opa(center_circle, 0, LV_PART_MAIN);                // 设置按钮的背景透明度为0
+    lv_obj_set_style_border_width(center_circle, 1, LV_PART_MAIN);          // 设置按钮的边框宽度
+    lv_obj_set_style_border_color(center_circle, lv_color_hex(0XFFFFFF), LV_PART_MAIN); // 设置按钮的边框颜色为蓝色
 }
 
 // 传感器数据更新接口（需要与传感器任务同步）
