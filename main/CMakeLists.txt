@@ -1,7 +1,7 @@
 idf_component_register(
     SRCS 
-        "main.cpp"
-        "ui/level_indicator.cpp"
+        "main.c"
+        "ui/level_indicator.c"
     INCLUDE_DIRS 
         "."
         "ui"
@@ -11,3 +11,5 @@ idf_component_register(
         esp_lcd
         driver
 )
+
+set_source_files_properties(main.c PROPERTIES LANGUAGE CXX)
