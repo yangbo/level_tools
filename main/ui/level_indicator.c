@@ -3,7 +3,6 @@
 #include "esp_check.h"
 
 #include "ui/level_indicator.h"
-#include "lv_conf.h"
 #include "lv_demos.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"

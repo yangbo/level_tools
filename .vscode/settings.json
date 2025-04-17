@@ -32,6 +32,9 @@
         "sensorqmi8658.hpp": "c",
         "lv_conf.h": "c",
         "lv_demos.h": "c",
-        "lv_demo_widgets.h": "c"
+        "lv_demo_widgets.h": "c",
+        "esp_lcd_touch_cst816s.h": "c",
+        "level_indicator.h": "c",
+        "sdkconfig.h": "c"
     }
 }

@@ -74,14 +74,8 @@ extern "C" void app_main() {
     // 初始化 LCD 和 触摸屏
     ui_main();
     
-    // 初始化显示驱动
-    // lvgl_display_init();
-    
-    // 创建水平仪UI
-    // create_level_indicator();
-
-    setup_sensor();
-    xTaskCreate(read_sensor_data, "sensor_read_task", 4096, NULL, 10, NULL);
+    // setup_sensor();
+    // xTaskCreate(read_sensor_data, "sensor_read_task", 4096, NULL, 10, NULL);
     
     // 启动LVGL任务
     // xTaskCreate(lvgl_task, "lvgl_task", 4096, NULL, 5, NULL);
