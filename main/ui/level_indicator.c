@@ -1,6 +1,6 @@
 #include <math.h>
 #include "esp_err.h"
-#include "esp_log.h" 
+#include "esp_log.h"
 #include "esp_check.h"
 
 #include "ui/level_indicator.h"
@@ -227,6 +227,7 @@ static void app_main_display(void)
 
 static lv_obj_t *arc;
 static lv_obj_t *bubble;
+static lv_obj_t *info_label;
 
 void create_level_indicator()
 {
@@ -251,17 +252,24 @@ void create_level_indicator()
     lv_obj_set_size(bubble, 20, 20);
     lv_obj_set_style_radius(bubble, LV_RADIUS_CIRCLE, LV_PART_MAIN);
     lv_obj_set_style_bg_color(bubble, lv_color_hex(0xFF0000), LV_PART_MAIN);
-    lv_obj_set_style_border_width(bubble, 0, LV_PART_MAIN);    // 去掉 border
+    lv_obj_set_style_border_width(bubble, 0, LV_PART_MAIN); // 去掉 border
     lv_obj_center(bubble);
 
     // 创建中心位置空心圆
-    lv_obj_t * center_circle = lv_btn_create(arc); // 创建一个按钮对象
+    lv_obj_t *center_circle = lv_btn_create(arc); // 创建一个按钮对象
     lv_obj_center(center_circle);
-    lv_obj_set_size(center_circle, 20, 20);        // 设置按钮的大小
-    lv_obj_set_style_radius(center_circle, LV_RADIUS_CIRCLE, LV_PART_MAIN); // 设置按钮的圆角半径为圆形
-    lv_obj_set_style_bg_opa(center_circle, 0, LV_PART_MAIN);                // 设置按钮的背景透明度为0
-    lv_obj_set_style_border_width(center_circle, 1, LV_PART_MAIN);          // 设置按钮的边框宽度
+    lv_obj_set_size(center_circle, 20, 20);                                             // 设置按钮的大小
+    lv_obj_set_style_radius(center_circle, LV_RADIUS_CIRCLE, LV_PART_MAIN);             // 设置按钮的圆角半径为圆形
+    lv_obj_set_style_bg_opa(center_circle, 0, LV_PART_MAIN);                            // 设置按钮的背景透明度为0
+    lv_obj_set_style_border_width(center_circle, 1, LV_PART_MAIN);                      // 设置按钮的边框宽度
     lv_obj_set_style_border_color(center_circle, lv_color_hex(0XFFFFFF), LV_PART_MAIN); // 设置按钮的边框颜色为蓝色
+
+    // 倾斜角度 label
+    info_label = lv_label_create(cont);
+    lv_label_set_text(info_label, "X: 0\xB0    Y: 0\xB0");
+    lv_obj_align_to(info_label, cont, LV_ALIGN_TOP_MID, -lv_obj_get_width(info_label)/2, 0);
+    lv_obj_set_style_text_color(info_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_text_font(info_label, &lv_font_montserrat_18, LV_PART_MAIN);
 }
 
 // 传感器数据更新接口（需要与传感器任务同步）
@@ -277,9 +285,11 @@ void update_level_indicator(float x, float y)
     // * 新位移量 = y * (2.0 - fabs(y)) * 控件宽度/2
     // * 当y接近0时，(2.0 - |y|) ≈ 2.0，灵敏度加倍
     // * 当y接近±1时，系数回归1.0，保持原有比例
-    lv_obj_align(bubble, LV_ALIGN_CENTER, 
-        y * (2.0 - fabs(y)) * lv_obj_get_width(arc)/2, 
-        -x * (2.0 - fabs(x)) * lv_obj_get_height(arc)/2);
+    lv_obj_align(bubble, LV_ALIGN_CENTER,
+                 y * (2.0 - fabs(y)) * lv_obj_get_width(arc) / 2,
+                 -x * (2.0 - fabs(x)) * lv_obj_get_height(arc) / 2);
+    // 更新倾斜文字信息
+    lv_label_set_text_fmt(info_label, "X: %d\xB0    Y: %d\xB0", (int)(y * 90), (int)(x * 90));
 
     // 更新圆弧指示
     // lv_arc_set_value(arc, angle_x);
