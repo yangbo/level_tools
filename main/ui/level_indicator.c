@@ -1,5 +1,6 @@
+#include <math.h>
 #include "esp_err.h"
-#include "esp_log.h"
+#include "esp_log.h" 
 #include "esp_check.h"
 
 #include "ui/level_indicator.h"
@@ -272,7 +273,13 @@ void update_level_indicator(float x, float y)
     // 加速度计 X=0, Y=1 时，屏幕左下右上垂直于地面，电路板上的Y轴坐标方向应该是反了
 
     // 更新气泡位置
-    lv_obj_align(bubble, LV_ALIGN_CENTER, y * lv_obj_get_width(arc) / 2, -x * lv_obj_get_height(arc) / 2);
+    // 采用二次函数增强小值区域的灵敏度：
+    // * 新位移量 = y * (2.0 - fabs(y)) * 控件宽度/2
+    // * 当y接近0时，(2.0 - |y|) ≈ 2.0，灵敏度加倍
+    // * 当y接近±1时，系数回归1.0，保持原有比例
+    lv_obj_align(bubble, LV_ALIGN_CENTER, 
+        y * (2.0 - fabs(y)) * lv_obj_get_width(arc)/2, 
+        -x * (2.0 - fabs(x)) * lv_obj_get_height(arc)/2);
 
     // 更新圆弧指示
     // lv_arc_set_value(arc, angle_x);
