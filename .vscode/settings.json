@@ -35,6 +35,7 @@
         "lv_demo_widgets.h": "c",
         "esp_lcd_touch_cst816s.h": "c",
         "level_indicator.h": "c",
-        "sdkconfig.h": "c"
+        "sdkconfig.h": "c",
+        "esp_lvgl_port.h": "c"
     }
 }

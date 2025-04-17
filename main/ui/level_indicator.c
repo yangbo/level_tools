@@ -204,6 +204,8 @@ static void _app_button_cb(lv_event_t *e)
     lv_disp_set_rotation(lvgl_disp, rotation);
 }
 
+void create_level_indicator();
+
 static void app_main_display(void)
 {
     lv_obj_t *scr = lv_scr_act();
@@ -211,8 +213,9 @@ static void app_main_display(void)
     /* Task lock */
     lvgl_port_lock(-1);
 
-    lv_demo_widgets();
-    
+    // lv_demo_widgets();
+    create_level_indicator();
+
     // LV_IMG_DECLARE(img_test3);
     // avatar = lv_img_create(scr);
     // lv_img_set_src(avatar, &img_test3);
@@ -224,7 +227,8 @@ static void app_main_display(void)
 static lv_obj_t *arc;
 static lv_obj_t *bubble;
 
-void create_level_indicator() {
+void create_level_indicator()
+{
     // 创建主容器
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_PCT(100), LV_PCT(100));
@@ -248,8 +252,10 @@ void create_level_indicator() {
     lv_obj_center(bubble);
 }
 
-void lvgl_task(void *arg) {
-    while (1) {
+void lvgl_task(void *arg)
+{
+    while (1)
+    {
         // 更新LVGL定时器
         lv_timer_handler();
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -257,18 +263,18 @@ void lvgl_task(void *arg) {
 }
 
 // 传感器数据更新接口（需要与传感器任务同步）
-void update_level_indicator(float x, float y) {
-    // 将加速度数据转换为角度（示例值）
-    float angle_x = x * 10.0f;  // 根据实际灵敏度调整
-    float angle_y = y * 10.0f;
+void update_level_indicator(float x, float y)
+{
+    // 加速度计 X=1，Y=0 时，屏幕正垂直于地面
+    // 加速度计 X=-1，Y=0 时，屏幕倒垂直于地面
+    // 加速度计 X=0, Y=-1 时，屏幕左上右下垂直于地面
+    // 加速度计 X=0, Y=1 时，屏幕左下右上垂直于地面，电路板上的Y轴坐标方向应该是反了
 
     // 更新气泡位置
-    lv_coord_t pos_x = lv_obj_get_width(arc)/2 + (angle_x * 3);
-    lv_coord_t pos_y = lv_obj_get_height(arc)/2 + (angle_y * 3);
-    lv_obj_set_pos(bubble, pos_x, pos_y);
+    lv_obj_align(bubble, LV_ALIGN_CENTER, y * lv_obj_get_width(arc) / 2, -x * lv_obj_get_height(arc) / 2);
 
     // 更新圆弧指示
-    lv_arc_set_value(arc, angle_x);
+    // lv_arc_set_value(arc, angle_x);
 }
 
 void ui_main(void)

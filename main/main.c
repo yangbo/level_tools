@@ -8,6 +8,7 @@
 #include "SensorLib.h"
 #include "SensorQMI8658.hpp"
 #include "ui/level_indicator.h"
+#include "esp_lvgl_port.h"
 
 // I2C configuration
 #define I2C_MASTER_SCL 10
@@ -82,6 +83,16 @@ void read_sensor_data(void* arg) {
     while (1) {
         if (qmi.getDataReady()) {
             if (qmi.getAccelerometer(acc.x, acc.y, acc.z)) {
+                // 将加速度数据转换为水平仪显示参数（范围-1.0~1.0）
+                // 注意：根据传感器安装方向调整坐标轴转换
+                float display_x = acc.x; // X轴对应1G量程
+                float display_y = acc.y; // Y轴对应1G量程
+                
+                // 更新水平仪UI（需要LVGL线程锁）
+                lvgl_port_lock(-1);
+                update_level_indicator(display_x, display_y);
+                lvgl_port_unlock();
+                
                 ESP_LOGI(TAG, "ACCEL: %f, %f, %f", acc.x, acc.y, acc.z);
             } else {
                 ESP_LOGE(TAG, "Failed to read accelerometer data");

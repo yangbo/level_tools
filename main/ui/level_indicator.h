@@ -5,6 +5,7 @@
 #endif
 
 void ui_main(void);
+void update_level_indicator(float x, float y);
 
 #ifdef __cplusplus
     }
