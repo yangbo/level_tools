@@ -235,13 +235,26 @@ lv_color_t *buffer = NULL;
 // 气泡半径
 #define BUBBLE_RADIUS 10
 
+lv_color16_t bubble_bg_color;
+lv_color16_t no_offset_color;
+
+void circle_update(lv_obj_t *canvas, lv_color_t bg_color, int radius)
+{
+    lv_draw_rect_dsc_t draw_dsc;
+    lv_draw_rect_dsc_init(&draw_dsc);
+    draw_dsc.bg_color = bg_color;
+    draw_dsc.bg_opa = LV_OPA_COVER;
+    draw_dsc.radius = radius; // 这一句是关键，没有就是矩形，这里设置圆角的半径
+    lv_canvas_draw_rect(canvas, 0, 0, radius * 2, radius * 2, &draw_dsc);
+}
+
 // radius 半径
 lv_obj_t *draw_solid_circle(lv_obj_t *parent, int radius)
 {
     int buffer_size = radius * 2;
     // 创建一个画布，用于绘制带有透明区域的控件
-    buffer = malloc(LV_IMG_BUF_SIZE_TRUE_COLOR_ALPHA(buffer_size,buffer_size));
-    lv_obj_t * canvas = lv_canvas_create(lv_scr_act());
+    buffer = malloc(LV_IMG_BUF_SIZE_TRUE_COLOR_ALPHA(buffer_size, buffer_size));
+    lv_obj_t *canvas = lv_canvas_create(lv_scr_act());
     lv_canvas_set_buffer(canvas, buffer, buffer_size, buffer_size, LV_IMG_CF_TRUE_COLOR_ALPHA);
     lv_obj_align(canvas, LV_ALIGN_CENTER, 0, 0);
 
@@ -249,23 +262,21 @@ lv_obj_t *draw_solid_circle(lv_obj_t *parent, int radius)
     lv_canvas_fill_bg(canvas, lv_color_black(), LV_OPA_0);
 
     // 绘制一个圆形，设置为非透明
-    lv_draw_rect_dsc_t draw_dsc;
-    lv_draw_rect_dsc_init(&draw_dsc);
-    draw_dsc.bg_color = lv_palette_main(LV_PALETTE_RED);
-    draw_dsc.bg_opa = LV_OPA_COVER;
-    draw_dsc.radius = radius;   // 这一句是关键，没有就是矩形，这里设置圆角的半径
-    lv_canvas_draw_rect(canvas, 0, 0, radius*2, radius*2, &draw_dsc);
+    circle_update(canvas, bubble_bg_color, radius);
 
     return canvas;
 }
 
 void create_level_indicator()
 {
+    // 预设颜色值
+    bubble_bg_color = lv_color_hex(0xe74032);
+    no_offset_color = lv_color_hex(0x14d36a);
     // 创建主容器
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(cont, LV_PCT(100), LV_PCT(100));                // PCT 是百分比 percent 的意思，即设置为父对象的100%宽度、高度
-    lv_obj_set_style_bg_color(cont, lv_color_hex(0x000000), 0);     // 背景色
-    lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN);           // 去掉边框
+    lv_obj_set_size(cont, LV_PCT(100), LV_PCT(100));            // PCT 是百分比 percent 的意思，即设置为父对象的100%宽度、高度
+    lv_obj_set_style_bg_color(cont, lv_color_hex(0x000000), 0); // 背景色
+    lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN);       // 去掉边框
     // 创建水平仪圆形背景
     arc = lv_arc_create(cont);
     lv_obj_set_size(arc, 200, 200);
@@ -320,19 +331,16 @@ void update_level_indicator(float x, float y)
     // * 当y接近0时，(2.0 - |y|) ≈ 2.0，灵敏度加倍
     // * 当y接近±1时，系数回归1.0，保持原有比例
     lv_obj_align(bubble, LV_ALIGN_CENTER,
-                // 让气泡中心位于下面坐标位置
+                 // 让气泡中心位于下面坐标位置
                  y * (2.0 - fabs(y)) * lv_obj_get_width(arc) / 2,
                  -x * (2.0 - fabs(x)) * lv_obj_get_height(arc) / 2);
     // 更新倾斜文字信息
     lv_label_set_text_fmt(info_label, "X: %d\xB0    Y: %d\xB0", (int)(y * 90), (int)(x * 90));
 
-    // 更新圆弧指示
-    // lv_arc_set_value(arc, angle_x);
-
     // 更新箭头位置（从中心到气泡）
     // 获取中心圆坐标（与ARC中心一致）
-    lv_coord_t center_x = lv_obj_get_width(arc)/2;
-    lv_coord_t center_y = lv_obj_get_height(arc)/2;
+    lv_coord_t center_x = lv_obj_get_width(arc) / 2;
+    lv_coord_t center_y = lv_obj_get_height(arc) / 2;
     // 获取气泡当前位置，以父中心为原点
     lv_coord_t bubble_x_offset = lv_obj_get_x_aligned(bubble);
     lv_coord_t bubble_y_offset = lv_obj_get_y_aligned(bubble);
@@ -345,10 +353,22 @@ void update_level_indicator(float x, float y)
     // 更新坐标
     line_points[0].x = center_x;
     line_points[0].y = center_y;
-    line_points[1].x = center_x - bubble_x_offset;  // 反向
+    line_points[1].x = center_x - bubble_x_offset; // 反向
     line_points[1].y = center_y - bubble_y_offset;
 
     lv_line_set_points(arrow_line, line_points, 2);
+
+    // 根据气泡偏移量更新气泡、字体颜色，如果偏移小就用绿色
+    if (abs(bubble_x_offset) < 1 && abs(bubble_y_offset) < 1)
+    {
+        lv_obj_set_style_text_color(info_label, no_offset_color, LV_PART_MAIN);
+        circle_update(bubble, no_offset_color, BUBBLE_RADIUS);
+    }
+    else
+    {
+        lv_obj_set_style_text_color(info_label, lv_color_white(), LV_PART_MAIN);
+        circle_update(bubble, bubble_bg_color, BUBBLE_RADIUS);
+    }
 }
 
 void ui_main(void)
