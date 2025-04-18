@@ -233,7 +233,7 @@ static lv_obj_t *arrow_line; // 新增箭头对象
 lv_color_t *buffer = NULL;
 
 // 气泡半径
-#define BUBBLE_RADIUS 20
+#define BUBBLE_RADIUS 10
 
 // radius 半径
 lv_obj_t *draw_solid_circle(lv_obj_t *parent, int radius)
@@ -253,8 +253,8 @@ lv_obj_t *draw_solid_circle(lv_obj_t *parent, int radius)
     lv_draw_rect_dsc_init(&draw_dsc);
     draw_dsc.bg_color = lv_palette_main(LV_PALETTE_RED);
     draw_dsc.bg_opa = LV_OPA_COVER;
-    draw_dsc.radius = radius;   // 这一句是关键，没有就是矩形
-    lv_canvas_draw_rect(canvas, radius, radius, radius, radius, &draw_dsc);
+    draw_dsc.radius = radius;   // 这一句是关键，没有就是矩形，这里设置圆角的半径
+    lv_canvas_draw_rect(canvas, 0, 0, radius*2, radius*2, &draw_dsc);
 
     return canvas;
 }
@@ -263,9 +263,9 @@ void create_level_indicator()
 {
     // 创建主容器
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(cont, LV_PCT(100), LV_PCT(100)); // PCT 是百分比 percent 的意思，即设置为父对象的100%宽度、高度
-    lv_obj_set_style_bg_color(cont, lv_color_hex(0x000000), 0);
-
+    lv_obj_set_size(cont, LV_PCT(100), LV_PCT(100));                // PCT 是百分比 percent 的意思，即设置为父对象的100%宽度、高度
+    lv_obj_set_style_bg_color(cont, lv_color_hex(0x000000), 0);     // 背景色
+    lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN);           // 去掉边框
     // 创建水平仪圆形背景
     arc = lv_arc_create(cont);
     lv_obj_set_size(arc, 200, 200);
@@ -304,10 +304,6 @@ void create_level_indicator()
     lv_obj_set_style_line_rounded(arrow_line, true, 0);
     // 设置箭头对象和父组件一样大小
     lv_obj_set_size(arrow_line, LV_PCT(100), LV_PCT(100));
-    // 让二者重合
-    lv_obj_center(arrow_line);
-    // 将箭头对象的坐标原点设置到圆圈的中心
-    lv_obj_set_pos(arrow_line, lv_obj_get_width(arc) / 2, lv_obj_get_width(arc) / 2);
 }
 
 // 传感器数据更新接口（需要与传感器任务同步）
@@ -325,8 +321,8 @@ void update_level_indicator(float x, float y)
     // * 当y接近±1时，系数回归1.0，保持原有比例
     lv_obj_align(bubble, LV_ALIGN_CENTER,
                 // 让气泡中心位于下面坐标位置
-                 y * (2.0 - fabs(y)) * lv_obj_get_width(arc) / 2 - 2*BUBBLE_RADIUS,
-                 -x * (2.0 - fabs(x)) * lv_obj_get_height(arc) / 2 - 2*BUBBLE_RADIUS);
+                 y * (2.0 - fabs(y)) * lv_obj_get_width(arc) / 2,
+                 -x * (2.0 - fabs(x)) * lv_obj_get_height(arc) / 2);
     // 更新倾斜文字信息
     lv_label_set_text_fmt(info_label, "X: %d\xB0    Y: %d\xB0", (int)(y * 90), (int)(x * 90));
 
@@ -335,11 +331,11 @@ void update_level_indicator(float x, float y)
 
     // 更新箭头位置（从中心到气泡）
     // 获取中心圆坐标（与ARC中心一致）
-    lv_coord_t center_x = lv_obj_get_x(arrow_line);
-    lv_coord_t center_y = lv_obj_get_y(arrow_line);
+    lv_coord_t center_x = lv_obj_get_width(arc)/2;
+    lv_coord_t center_y = lv_obj_get_height(arc)/2;
     // 获取气泡当前位置，以父中心为原点
-    lv_coord_t bubble_x = lv_obj_get_x(bubble); // - lv_obj_get_width(bubble);
-    lv_coord_t bubble_y = lv_obj_get_y(bubble); // - lv_obj_get_height(bubble);
+    lv_coord_t bubble_x_offset = lv_obj_get_x_aligned(bubble);
+    lv_coord_t bubble_y_offset = lv_obj_get_y_aligned(bubble);
 
     // 创建一个静态变量，以便持续存在，否则无法显示
     static lv_point_t line_points[] = {
@@ -347,8 +343,10 @@ void update_level_indicator(float x, float y)
         {.x = 0, .y = 0}  // 终点
     };
     // 更新坐标
-    line_points[1].x = bubble_x - center_x;
-    line_points[1].y = bubble_y - center_y;
+    line_points[0].x = center_x;
+    line_points[0].y = center_y;
+    line_points[1].x = center_x - bubble_x_offset;  // 反向
+    line_points[1].y = center_y - bubble_y_offset;
 
     lv_line_set_points(arrow_line, line_points, 2);
 }
