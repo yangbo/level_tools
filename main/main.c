@@ -74,9 +74,8 @@ void setup_sensor() {
 extern "C" void app_main() {
     // 初始化 LCD 和 触摸屏
     ui_main();
-    
-    setup_sensor();
-    xTaskCreate(read_sensor_data, "sensor_read_task", 4096, NULL, 10, NULL);
+    // setup_sensor();
+    // xTaskCreate(read_sensor_data, "sensor_read_task", 4096, NULL, 10, NULL);
 }
 
 void read_sensor_data(void* arg) {

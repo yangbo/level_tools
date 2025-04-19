@@ -4,7 +4,7 @@
 #define CANVAS_WIDTH  200
 #define CANVAS_HEIGHT  150
 
-void lv_example_canvas_1(void)
+void lv_example_rotate_text_canvas(void)
 {
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_rect_dsc_init(&rect_dsc);
