@@ -50,7 +50,7 @@
 esp_lcd_touch_handle_t tp = NULL;
 #endif
 
-static const char *TAG = "EXAMPLE";
+static const char *TAG = "LevelTools";
 
 static lv_obj_t *avatar;
 
@@ -60,6 +60,24 @@ static esp_lcd_panel_handle_t lcd_panel = NULL;
 
 /* LVGL display and touch */
 static lv_display_t *lvgl_disp = NULL;
+
+// ====================
+
+static lv_obj_t *arc;
+static lv_obj_t *bubble;
+static lv_obj_t *info_label;
+static lv_obj_t *info_label_vert;
+static lv_obj_t *arrow_line; // 新增箭头对象
+
+lv_color_t *buffer = NULL;
+
+// 气泡半径
+#define BUBBLE_RADIUS 10
+
+lv_color16_t bubble_bg_color;
+lv_color16_t no_offset_color;
+
+// =====================
 
 esp_err_t app_lcd_init(void)
 {
@@ -225,19 +243,6 @@ static void app_main_display(void)
     lvgl_port_unlock();
 }
 
-static lv_obj_t *arc;
-static lv_obj_t *bubble;
-static lv_obj_t *info_label;
-static lv_obj_t *arrow_line; // 新增箭头对象
-
-lv_color_t *buffer = NULL;
-
-// 气泡半径
-#define BUBBLE_RADIUS 10
-
-lv_color16_t bubble_bg_color;
-lv_color16_t no_offset_color;
-
 void circle_update(lv_obj_t *canvas, lv_color_t bg_color, int radius)
 {
     lv_draw_rect_dsc_t draw_dsc;
@@ -303,10 +308,18 @@ void create_level_indicator()
 
     // 倾斜角度 label
     info_label = lv_label_create(cont);
-    lv_label_set_text(info_label, "X: 0\xB0    Y: 0\xB0");
+    lv_label_set_text(info_label, "X: 0\xB0\t\tY: 0\xB0");
     lv_obj_align_to(info_label, cont, LV_ALIGN_TOP_MID, -lv_obj_get_width(info_label) / 2, 0);
     lv_obj_set_style_text_color(info_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_text_font(info_label, &lv_font_montserrat_18, LV_PART_MAIN);
+
+    info_label_vert = lv_label_create(cont);
+    lv_label_set_text(info_label_vert, "X: 0\xB0    Y: 0\xB0");
+    //lv_obj_align_to(info_label_vert, cont, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_transform_angle(info_label_vert, 450, LV_PART_MAIN);
+    lv_obj_set_style_text_color(info_label_vert, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_translate_x(info_label_vert, 50, LV_PART_MAIN);
+    lv_obj_set_style_text_font(info_label_vert, &lv_font_montserrat_18, LV_PART_MAIN);
 
     // 创建箭头线对象
     arrow_line = lv_line_create(arc);
@@ -335,7 +348,7 @@ void update_level_indicator(float x, float y)
                  y * (2.0 - fabs(y)) * lv_obj_get_width(arc) / 2,
                  -x * (2.0 - fabs(x)) * lv_obj_get_height(arc) / 2);
     // 更新倾斜文字信息
-    lv_label_set_text_fmt(info_label, "X: %d\xB0    Y: %d\xB0", (int)(y * 90), (int)(x * 90));
+    lv_label_set_text_fmt(info_label, "X: %d\xB0\t\tY: %d\xB0", (int)(y * 90), (int)(x * 90));
 
     // 更新箭头位置（从中心到气泡）
     // 获取中心圆坐标（与ARC中心一致）
