@@ -447,8 +447,8 @@ void ui_main(void)
 #endif
 
     /* Show LVGL objects */
-    // app_main_display();
-    sq_ui_init();
+    app_main_display();
+    // sq_ui_init();
     // lv_example_rotate_text_canvas();
 }
 
